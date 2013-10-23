@@ -1,0 +1,65 @@
+version = 0.01
+
+clean.doLast {
+    delete 'dist'
+}
+
+dependencies {
+	compile 'org.javassist:javassist:3.18.0-GA'
+	
+    testCompile 'junit:junit:4.+'
+	testCompile 'ch.qos.logback:logback-classic:1.0.3'
+}
+
+jar {
+    //copy all dependencies to result jar
+    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest {
+        def version = '1.0'
+        def premainClass = 'com.jtaky.logger.agent.LoggerAgent'
+        attributes 'Implementation-Title': 'logging-agent', 
+                   'Implementation-version': version,
+                   'Premain-Class': premainClass
+    }
+}
+
+test {
+	jvmArgs '-javaagent:' + jar.archivePath
+}
+
+task pack(dependsOn: 'jar') << {
+    copy {
+        from jar.archivePath
+        from 'src/main/resources/application.properties '
+        into 'dist'
+        into('lib') {
+            from configurations.compile
+        }
+    }
+}
+
+task zipSrc(type: Zip, dependsOn: 'pack') {
+    description = 'Zip source files directory'
+    description 'Zip source files'
+    from projectDir
+    include 'src/**/*'
+    classifier = 'src'
+}
+
+File distFolder = file('dist')
+
+task zipJars(type: Zip, dependsOn: 'zipSrc') {
+    description = 'Zip binary jars'
+    from('dist/')
+}
+
+task release(dependsOn: 'zipJars') << {
+    copy {
+        from zipJars.archivePath
+        into 'dist'
+    }
+    copy {
+        from zipSrc.archivePath
+        into 'dist'
+    }
+}
