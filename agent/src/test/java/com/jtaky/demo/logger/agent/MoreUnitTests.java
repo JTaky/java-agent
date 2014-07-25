@@ -1,6 +1,7 @@
 package com.jtaky.demo.logger.agent;
 
 import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class MoreUnitTests {
 	@Test
 	public void testJava(){
 		log(getClass().getName() + ".testJava() method");
-		f(12, 0.33);
+		Assert.assertTrue(f(12, 0.33) > 12.3);
 	}
 
 }

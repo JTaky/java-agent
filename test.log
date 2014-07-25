@@ -1,0 +1,3 @@
+10.101.11.14 - - [18/Dec/2013:18:53:50 +0000] "POST /facilitator/rest/8f5b84b72677d7bb5d25565088a9c046/logout/ HTTP/1.1" 200 - B http-apr-8080-exec-57 54 ms
+10.101.11.14 - - [18/Dec/2013:18:53:50 +0000] "POST /facilitator/rest/8f5b84b72677d7bb5d25565088a9c046/logout/ HTTP/1.1" 200 - B http-apr-8080-exec-57 50 ms
+10.101.11.14 - - [18/Dec/2013:18:53:50 +0000] "POST /facilitator/rest/8f5b84b72677d7bb5d25565088a9c046/logout/ HTTP/1.1" 200 - B http-apr-8080-exec-57 54 ms

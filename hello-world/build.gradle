@@ -4,5 +4,17 @@ clean.doLast {
     delete 'dist'
 }
 
+afterEvaluate{
+    jar.manifest {
+        def version = '1.0'
+        def manifestClasspath = configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
+        def mainClassName = 'com.jtaky.demo.helloworld.EntryPoint'
+        attributes 'Implementation-Title': 'JTaky',
+                'Implementation-version': version,
+                'Class-Path': manifestClasspath,
+                'Main-Class': mainClassName
+    }
+}
+
 task release(dependsOn: 'jar') << {
 }

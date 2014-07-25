@@ -4,6 +4,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.lang.reflect.Modifier;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -11,7 +12,26 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 
+/**
+ * TODO:
+ * 1. Read and inject configuration
+ * 2. Move code to formatter
+ */
 public class MethodHacker implements ClassFileTransformer {
+
+	private static String beforeMethodCallFormat =
+		"try { " +
+			"com.jtaky.logger.agent.ParameterStorage.beforeMethod(\"%s\", $args ); " +
+		"} catch(Exception e) { " + 
+			"e.printStackTrace(); " +
+		"}";
+
+	private static String afterMethodCallFormat =
+		"try { " +
+			"com.jtaky.logger.agent.ParameterStorage.afterMethod(\"%s\", ($w)$_); " +
+		"} catch(Exception e) { " + 
+			"e.printStackTrace(); " +
+		"}";
 
 	@SuppressWarnings("serial")
 	private static final List<String> magicClassPatterns = new ArrayList<String>() {
@@ -65,26 +85,10 @@ public class MethodHacker implements ClassFileTransformer {
 				for (CtMethod m : cc.getDeclaredMethods()) {
 					if (isHackeableMethod(m)) {
 						Class<?> clazz = com.jtaky.logger.agent.ParameterStorage.class; //force class load
-						String beforeMethodCall =
-						 "try { " +
-						 	"com.jtaky.logger.agent.ParameterStorage.beforeMethod(" +
-						 		"\"" + m.getLongName() + "\"" +
-						 		", $args " +
-						 	"); " +
-						 "} catch(Exception e) { " + 
-						 	"e.printStackTrace(); " +
-						 "}";
-						 m.insertBefore(beforeMethodCall);
-						 String afterMethodCall =
-						 "try { " +
-						 	"com.jtaky.logger.agent.ParameterStorage.afterMethod(" +
-						 		"\"" + m.getLongName() + "\"" +
-						 		", ($w)$_" +
-						 	"); " +
-						 "} catch(Exception e) { " + 
-						 	"e.printStackTrace(); " +
-						 "}";						 
-						 m.insertAfter(afterMethodCall);
+						String beforeMethodCall = String.format(beforeMethodCallFormat, m.getLongName());
+						m.insertBefore(beforeMethodCall);
+						String afterMethodCall = String.format(afterMethodCallFormat, m.getLongName());
+						m.insertAfter(afterMethodCall);
 					}
 				}
 				classfileBuffer = cc.toBytecode();
