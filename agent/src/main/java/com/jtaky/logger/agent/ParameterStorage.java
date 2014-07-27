@@ -43,9 +43,9 @@ public class ParameterStorage {
 		}
 	}
 
-	public static void afterMethod(String methodName, Object resultValue){
-		String msgPattern = "leave: %s(%s)";
-		String msg = String.format(msgPattern, methodName, String.valueOf(resultValue));
+	public static void afterMethod(String methodName, Class<?> resultType, Object resultValue){
+		String msgPattern = "leave: %s %s(%s)";
+		String msg = String.format(msgPattern, String.valueOf(resultType), methodName, String.valueOf(resultValue));
 		log(msg);
 		Stack<MethodCall> callHistory = methodCallHistory.get();
 		assert callHistory != null;

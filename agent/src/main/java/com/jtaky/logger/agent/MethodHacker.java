@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtPrimitiveType;
 import javassist.CtMethod;
 
 /**
@@ -28,7 +29,7 @@ public class MethodHacker implements ClassFileTransformer {
 
 	private static String afterMethodCallFormat =
 		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.afterMethod(\"%s\", ($w)$_); " +
+			"com.jtaky.logger.agent.ParameterStorage.afterMethod(\"%s\", %s, ($w)$_); " +
 		"} catch(Exception e) { " + 
 			"e.printStackTrace(); " +
 		"}";
@@ -87,7 +88,8 @@ public class MethodHacker implements ClassFileTransformer {
 						Class<?> clazz = com.jtaky.logger.agent.ParameterStorage.class; //force class load
 						String beforeMethodCall = String.format(beforeMethodCallFormat, m.getLongName());
 						m.insertBefore(beforeMethodCall);
-						String afterMethodCall = String.format(afterMethodCallFormat, m.getLongName());
+						Class<?> retClass = getClassOrWrapper(m.getReturnType());
+						String afterMethodCall = String.format(afterMethodCallFormat, m.getLongName(), retClass.getName() + ".class");
 						m.insertAfter(afterMethodCall);
 					}
 				}
@@ -98,6 +100,14 @@ public class MethodHacker implements ClassFileTransformer {
 			}
 		}
 		return classfileBuffer;
+	}
+
+	private Class<?> getClassOrWrapper(CtClass cc) throws Exception {
+		if(cc.isPrimitive()){
+			return Class.forName(((CtPrimitiveType)cc).getWrapperName());
+		} else {
+			return cc.toClass();
+		}
 	}
 
 	private boolean isHackeableMethod(CtMethod m) {
