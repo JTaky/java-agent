@@ -1,5 +1,7 @@
 package com.jtaky.demo.logger.agent;
 
+import com.jtaky.logger.agent.MethodCall;
+import com.jtaky.logger.agent.ParameterStorage;
 import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
@@ -8,32 +10,38 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.List;
 
 public class MoreUnitTests {
 
-	private static void log(String msg) {
-		try (PrintWriter out = new PrintWriter(new FileOutputStream(new File(
-				"/tmp/test_out1.log"), true))) {
-			out.println(msg);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
+	class A { public String toString(){ return "A"; } }
+	class B { public String toString(){ return "B"; } }
+	class C { public String toString(){ return "C"; } }
 
-	private double f(int a, double b){
-		log(a + ", " + b);
-		return a + b;
-	}
-	
-	@Before
-	public void setUp(){
-		log("Before");
+
+	private double f(int a, double b, Runnable callback){
+        try {
+            return a + b;
+        } finally {
+            callback.run();
+        }
+    }
+
+	private Object f(A a, B b){
+		return new C();
 	}
 	
 	@Test
-	public void testJava(){
-		log(getClass().getName() + ".testJava() method");
-		Assert.assertTrue(f(12, 0.33) > 12.3);
+	public void testPrimitiveTypes(){
+        f(12, 0.33, () -> {
+            List<MethodCall> methodCallList = ParameterStorage.findMethodCall("MoreUnitTests", "f");
+        });
+
+	}
+
+	@Test
+	public void testClasses(){
+		Assert.assertNotNull(f(new A(), new B()));
 	}
 
 }

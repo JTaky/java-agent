@@ -106,7 +106,7 @@ public class MethodHacker implements ClassFileTransformer {
 		if(cc.isPrimitive()){
 			return Class.forName(((CtPrimitiveType)cc).getWrapperName());
 		} else {
-			return cc.toClass();
+            return Class.forName(cc.getName());
 		}
 	}
 

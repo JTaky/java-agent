@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 public class ParameterStorage {
 
@@ -20,24 +23,16 @@ public class ParameterStorage {
 
 	public static void beforeMethod(String methodName, Object[] args) {
 		try {
-			String msg = String.format("enter: %s(", methodName);
-			if (args != null) {
-				for (Object o : args) {
-					 if(o != null){
-					 	msg += o.toString() + ", ";
-					 } else {
-						msg += "null, ";
-					 }
-				}
-			}
-			msg += ")";
-			log(msg);
-			Stack<MethodCall> callHistory = methodCallHistory.get();
-			if(callHistory == null){
-				callHistory = new Stack<MethodCall>();
-				methodCallHistory.set(callHistory);
-			}
-			callHistory.push(new MethodCall(methodName, args));
+            Stack<MethodCall> callHistory = methodCallHistory.get();
+            if(callHistory == null){
+                callHistory = new Stack<>();
+                methodCallHistory.set(callHistory);
+            }
+            StackTraceElement stackTraceElement = StackTraceUtil.getPrevClassStackTraceElement();
+            MethodCall methodCall = new MethodCall(stackTraceElement.getClassName(), stackTraceElement.getMethodName(), args);
+			callHistory.push(methodCall);
+
+            log(String.format("enter: %s", methodCall.toString()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -64,4 +59,13 @@ public class ParameterStorage {
 		}
 	}
 
+    public static List<MethodCall> findMethodCall(String className, String methodName) {
+        Stack<MethodCall> methodCallStack = methodCallHistory.get();
+        if(methodCallStack == null){
+            return new ArrayList<>();
+        }
+        return methodCallStack.stream()
+                .filter((m) ->  m.className.endsWith(className) && m.methodName.equals(methodName))
+                .collect(Collectors.toList());
+    }
 }
