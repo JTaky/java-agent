@@ -6,7 +6,8 @@ clean.doLast {
 
 dependencies {
 	compile 'org.javassist:javassist:3.18.0-GA'
-	
+    compile 'org.slf4j:slf4j-api:1.7.7'
+
     testCompile 'junit:junit:4.+'
 	testCompile 'ch.qos.logback:logback-classic:1.0.3'
 }
@@ -19,7 +20,8 @@ jar {
         def premainClass = 'com.jtaky.logger.agent.LoggerAgent'
         attributes 'Implementation-Title': 'logging-agent', 
                    'Implementation-version': version,
-                   'Premain-Class': premainClass
+                   'Premain-Class': premainClass,
+                   'Can-Retransform-Classes': 'true'
     }
 }
 

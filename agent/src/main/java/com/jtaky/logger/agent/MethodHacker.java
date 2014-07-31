@@ -50,7 +50,11 @@ public class MethodHacker implements ClassFileTransformer {
 	@SuppressWarnings("serial")
 	private static final List<String> inspectoredClassPatterns = new ArrayList<String>() {
 		{
-			this.add("com.jtaky.*");
+			this.add("com.jtaky.demo.*");
+            // this.add("java.util.logging.Logger");
+            // this.add("ch.qos.logback.classic.Logger");
+            //this.add("org.apache.log4j.Logger");
+            //this.add("org.apache.logging.log4j.Logger");
 		}
 	};
 
@@ -79,17 +83,18 @@ public class MethodHacker implements ClassFileTransformer {
 		String dotClassName = getDotClassName(className);
 		if (isIgnoredClassName(dotClassName)) {
 			return classfileBuffer;
-		}  else if (isInspectoredClassName(dotClassName)) {
+		}  else
+        if (isInspectoredClassName(dotClassName)) {
 			try {
+                System.out.println("Transform class - " + dotClassName);
 				ClassPool cp = ClassPool.getDefault();
 				CtClass cc = cp.get(dotClassName);
 				for (CtMethod m : cc.getDeclaredMethods()) {
 					if (isHackeableMethod(m)) {
-						Class<?> clazz = com.jtaky.logger.agent.ParameterStorage.class; //force class load
 						String beforeMethodCall = String.format(beforeMethodCallFormat, m.getLongName());
 						m.insertBefore(beforeMethodCall);
-						Class<?> retClass = getClassOrWrapper(m.getReturnType());
-						String afterMethodCall = String.format(afterMethodCallFormat, m.getLongName(), retClass.getName() + ".class");
+						String retClassName = getClassOrWrapperName(m.getReturnType());
+						String afterMethodCall = String.format(afterMethodCallFormat, m.getLongName(), retClassName + ".class");
 						m.insertAfter(afterMethodCall);
 					}
 				}
@@ -102,18 +107,17 @@ public class MethodHacker implements ClassFileTransformer {
 		return classfileBuffer;
 	}
 
-	private Class<?> getClassOrWrapper(CtClass cc) throws Exception {
+	private String getClassOrWrapperName(CtClass cc) throws Exception {
 		if(cc.isPrimitive()){
-			return Class.forName(((CtPrimitiveType)cc).getWrapperName());
+			return Class.forName(((CtPrimitiveType)cc).getWrapperName()).getName();
 		} else {
-            return Class.forName(cc.getName());
+            return cc.getName();
 		}
 	}
 
 	private boolean isHackeableMethod(CtMethod m) {
 		return !Modifier.isAbstract(m.getModifiers())
 				&& !Modifier.isNative(m.getModifiers())
-				&& !m.getLongName().contains("println")
 				&& !m.getLongName().matches(".*access\\$\\d+$");
 	}
 

@@ -1,5 +1,6 @@
 package com.jtaky.logger.agent;
 
+import ch.qos.logback.classic.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 

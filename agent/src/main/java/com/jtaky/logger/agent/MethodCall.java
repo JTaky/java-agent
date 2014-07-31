@@ -1,5 +1,6 @@
 package com.jtaky.logger.agent;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -11,12 +12,12 @@ public class MethodCall {
 
     public final String className;
 	public final String methodName;
-	public final List<String> args;
+	public final List<Object> args;
 
 	public MethodCall(String className, String methodName, Object[] args){
         this.className = className;
 		this.methodName = methodName;
-		this.args = toUnmodifiableStringsList(args);
+		this.args = Arrays.asList(args);
 	}
 
 	@Override

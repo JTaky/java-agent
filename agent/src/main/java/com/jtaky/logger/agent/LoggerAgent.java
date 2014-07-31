@@ -1,27 +1,33 @@
 package com.jtaky.logger.agent;
 
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 
 public class LoggerAgent {
 	
-	private static MethodHacker methodHacker = new MethodHacker();
-	
-	public static void premain(String agentArgument,
-            Instrumentation instrumentation){
+	public static void premain(String agentArgument, Instrumentation instrumentation){
 		System.out.println("Test Java Agent(premain)");
-		instrumentation.addTransformer(methodHacker);
-		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-			@Override
-			public void uncaughtException(Thread t, Throwable e) {
-				System.out.println("Exception in Thread - " + t.getName());
-				e.printStackTrace();
-			}
-		});
-	}
-	
-	public static void agentmain(String agentArgs, Instrumentation inst){
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            System.out.println("Exception in Thread - " + t.getName());
+            e.printStackTrace();
+        });
+        retransformClasses(instrumentation);
+        instrumentation.addTransformer(new MethodHacker());
+//        retransformClasses(instrumentation);
+    }
+
+    public static void agentmain(String agentArgument, Instrumentation instrumentation){
 		System.out.println("Test Java Agent(agentmain)");
 	}
+
+    private static void retransformClasses(Instrumentation instrumentation) {
+        try {
+            if(instrumentation.isRetransformClassesSupported()) {
+                instrumentation.retransformClasses(Exception.class);
+            }
+        } catch (UnmodifiableClassException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
