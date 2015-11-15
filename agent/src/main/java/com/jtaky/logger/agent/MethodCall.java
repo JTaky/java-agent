@@ -10,23 +10,23 @@ import java.util.ArrayList;
  */
 public class MethodCall {
 
-    public final String className;
+    public final Class<?> clazz;
 	public final String methodName;
 	public final List<Object> args;
 
-    public MethodCall(StackTraceElement stackTraceElement, Object[] args){
-        this(stackTraceElement.getClassName(), stackTraceElement.getMethodName(), args);
-    }
-
-	public MethodCall(String className, String methodName, Object[] args){
-        this.className = className;
-		this.methodName = methodName;
+	public MethodCall(Class<?> clazz, StackTraceElement stackTraceElement, Object[] args){
+        this.clazz = clazz;
+		this.methodName = stackTraceElement.getMethodName();
 		this.args = Arrays.asList(args);
 	}
 
+    public String className(){
+        return clazz.getName();
+    }
+
 	@Override
 	public String toString(){
-		return className + "." + methodName + "(" + getFormattedArgs() + ")";
+		return clazz.getName() + "." + methodName + "(" + getFormattedArgs() + ")";
 	}	
 
 	private List<String> toUnmodifiableStringsList(Object[] args){

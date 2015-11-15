@@ -18,13 +18,13 @@ public class ParameterStorage {
     //in order to stop hooks when agent code is executed
     private static ThreadLocal<Boolean> isHookInTheStack = new ThreadLocal<>();
 
-    public static void beforeMethod(String methodName) {
-		beforeMethod(methodName, new Object[0]);
+    public static void beforeMethod(Class<?> clazz, String methodName) {
+		beforeMethod(clazz, methodName, new Object[0]);
 	}
 
-	public static void beforeMethod(String methodName, Object[] args) {
+	public static void beforeMethod(Class<?> clazz, String methodName, Object[] args) {
         if(isHookInTheStack()){
-            log("*** Hook is in the stack");
+            //was executed by agent
             return;
         }
 		try {
@@ -34,7 +34,7 @@ public class ParameterStorage {
                 callHistory = new Stack<>();
                 methodCallHistory.set(callHistory);
             }
-            MethodCall methodCall = new MethodCall(StackTraceUtil.getPrevClassStackTraceElement(), args);
+            MethodCall methodCall = new MethodCall(clazz, StackTraceUtil.getPrevClassStackTraceElement(), args);
 			callHistory.push(methodCall);
 
             log(String.format("enter: %s", methodCall.toString()));
@@ -52,7 +52,7 @@ public class ParameterStorage {
         }
     }
 
-    public static void afterMethod(String methodName, Class<?> resultType, Object resultValue) {
+    public static void afterMethod(Class<?> clazz, String methodName, Class<?> resultType, Object resultValue) {
         if (isHookInTheStack()) {
             return;
         }
@@ -75,7 +75,7 @@ public class ParameterStorage {
             return new ArrayList<>();
         }
         return methodCallStack.stream()
-                .filter((m) ->  m.className.endsWith(className) && m.methodName.equals(methodName))
+                .filter((m) ->  m.className().endsWith(className) && m.methodName.equals(methodName))
                 .collect(Collectors.toList());
     }
 

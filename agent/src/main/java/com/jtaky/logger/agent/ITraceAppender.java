@@ -5,6 +5,6 @@ import java.util.Stack;
 
 public interface ITraceAppender {
 
-    public void output(List<MethodCall> methodCalls);
+    void output(List<MethodCall> methodCalls);
 
 }

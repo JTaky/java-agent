@@ -37,7 +37,7 @@ public class ParamHooksTest {
             Assert.assertFalse("Did not find method call in stack", methodCallList.isEmpty());
             MethodCall fCall = methodCallList.get(0);
 
-            Assert.assertEquals("com.jtaky.demo.logger.agent.ParamHooksTest",  fCall.className);
+            Assert.assertEquals("com.jtaky.demo.logger.agent.ParamHooksTest",  fCall.className());
             Assert.assertEquals("f",  fCall.methodName);
             Assert.assertEquals(3,  fCall.args.size());
             Assert.assertEquals(12,  fCall.args.get(0));

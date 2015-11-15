@@ -12,8 +12,8 @@ public class LoggerAgent {
             e.printStackTrace();
         });
         retransformClasses(instrumentation);
-        instrumentation.addTransformer(new MethodHacker());
-//        retransformClasses(instrumentation);
+        instrumentation.addTransformer(new MethodHacker(), true);
+        retransformClasses(instrumentation);
     }
 
     public static void agentmain(String agentArgument, Instrumentation instrumentation){
@@ -24,6 +24,7 @@ public class LoggerAgent {
         try {
             if(instrumentation.isRetransformClassesSupported()) {
                 instrumentation.retransformClasses(Exception.class);
+                instrumentation.retransformClasses(RuntimeException.class);
             }
         } catch (UnmodifiableClassException e) {
             e.printStackTrace();

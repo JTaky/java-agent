@@ -4,14 +4,10 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.lang.reflect.Modifier;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.ArrayList;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtPrimitiveType;
-import javassist.CtMethod;
+import javassist.*;
 
 /**
  * TODO:
@@ -22,17 +18,31 @@ public class MethodHacker implements ClassFileTransformer {
 
 	private static String beforeMethodCallFormat =
 		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.beforeMethod(\"%s\", $args ); " +
-		"} catch(Exception e) { " + 
+			"com.jtaky.logger.agent.ParameterStorage.beforeMethod(%s, \"%s\", $args ); " +
+		"} catch(Exception e) { " +
 			"e.printStackTrace(); " +
 		"}";
 
 	private static String afterMethodCallFormat =
 		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.afterMethod(\"%s\", %s, ($w)$_); " +
+			"com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", %s, ($w)$_); " +
 		"} catch(Exception e) { " + 
 			"e.printStackTrace(); " +
 		"}";
+
+    private static String beforeConstructorCallFormat =
+            "try { " +
+                    "com.jtaky.logger.agent.ParameterStorage.beforeMethod(%s, \"%s\", $args ); " +
+                    "} catch(Exception e) { " +
+                    "e.printStackTrace(); " +
+                    "}";
+
+    private static String afterConstructorCallFormat =
+            "try { " +
+                    "com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", Void.TYPE, ($w)$_); " +
+                    "} catch(Exception e) { " +
+                    "e.printStackTrace(); " +
+                    "}";
 
 	@SuppressWarnings("serial")
 	private static final List<String> magicClassPatterns = new ArrayList<String>() {
@@ -43,7 +53,6 @@ public class MethodHacker implements ClassFileTransformer {
 			this.add("org.gradle.*");
 			this.add("java.*");
 			this.add("com.jtaky.logger.agent.*");
-//			this.add("org.slf4j..*");
 		}
 	};
 
@@ -51,7 +60,6 @@ public class MethodHacker implements ClassFileTransformer {
 	private static final List<String> inspectoredClassPatterns = new ArrayList<String>() {
 		{
 			this.add("com.jtaky.demo.*");
-            this.add("java.util.logging.Logger");
             this.add("ch.qos.logback..*");
             this.add("org.apache.log4j..*");
             this.add("org.apache.logging.log4j..*");
@@ -86,18 +94,24 @@ public class MethodHacker implements ClassFileTransformer {
 		}  else
         if (isInspectoredClassName(dotClassName)) {
 			try {
-                System.out.println("Transform class - " + dotClassName);
+                log("Transform class - " + dotClassName);
 				ClassPool cp = ClassPool.getDefault();
 				CtClass cc = cp.get(dotClassName);
 				for (CtMethod m : cc.getDeclaredMethods()) {
 					if (isHackeableMethod(m)) {
-						String beforeMethodCall = String.format(beforeMethodCallFormat, m.getLongName());
+						String beforeMethodCall = String.format(beforeMethodCallFormat, dotClassName + ".class", m.getLongName());
 						m.insertBefore(beforeMethodCall);
 						String retClassName = getClassOrWrapperName(m.getReturnType());
-						String afterMethodCall = String.format(afterMethodCallFormat, m.getLongName(), retClassName + ".class");
+						String afterMethodCall = String.format(afterMethodCallFormat, dotClassName + ".class", m.getLongName(), retClassName + ".class");
 						m.insertAfter(afterMethodCall);
 					}
 				}
+                for (CtConstructor ct : cc.getConstructors()) {
+                    String beforeMethodCall = String.format(beforeConstructorCallFormat, dotClassName + ".class", ct.getLongName());
+                    ct.insertBefore(beforeMethodCall);
+                    String afterMethodCall = String.format(afterConstructorCallFormat, dotClassName + ".class", ct.getLongName());
+                    ct.insertAfter(afterMethodCall);
+                }
 				classfileBuffer = cc.toBytecode();
 				cc.detach();
 			} catch (Exception ex) {
