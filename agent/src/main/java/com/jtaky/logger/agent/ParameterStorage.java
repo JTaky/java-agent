@@ -34,8 +34,7 @@ public class ParameterStorage {
                 callHistory = new Stack<>();
                 methodCallHistory.set(callHistory);
             }
-            StackTraceElement stackTraceElement = StackTraceUtil.getPrevClassStackTraceElement();
-            MethodCall methodCall = new MethodCall(stackTraceElement.getClassName(), stackTraceElement.getMethodName(), args);
+            MethodCall methodCall = new MethodCall(StackTraceUtil.getPrevClassStackTraceElement(), args);
 			callHistory.push(methodCall);
 
             log(String.format("enter: %s", methodCall.toString()));

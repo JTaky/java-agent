@@ -14,6 +14,10 @@ public class MethodCall {
 	public final String methodName;
 	public final List<Object> args;
 
+    public MethodCall(StackTraceElement stackTraceElement, Object[] args){
+        this(stackTraceElement.getClassName(), stackTraceElement.getMethodName(), args);
+    }
+
 	public MethodCall(String className, String methodName, Object[] args){
         this.className = className;
 		this.methodName = methodName;
