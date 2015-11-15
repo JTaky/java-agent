@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -16,6 +15,7 @@ public class ParameterStorage {
 	//add log4j
 	//add implement thread local aggregation with stack logic
 	private static ThreadLocal<Stack<MethodCall>> methodCallHistory = new ThreadLocal<>();
+    //in order to stop hooks when agent code is executed
     private static ThreadLocal<Boolean> isHookInTheStack = new ThreadLocal<>();
 
     public static void beforeMethod(String methodName) {
@@ -24,6 +24,7 @@ public class ParameterStorage {
 
 	public static void beforeMethod(String methodName, Object[] args) {
         if(isHookInTheStack()){
+            log("*** Hook is in the stack");
             return;
         }
 		try {
@@ -58,17 +59,29 @@ public class ParameterStorage {
         }
         try {
             enterInTheHook();
-            String msgPattern = "leave: %s %s(%s)";
+            String msgPattern = "leave: %s %s(return %s)";
             String msg = String.format(msgPattern, String.valueOf(resultType), methodName, String.valueOf(resultValue));
             log(msg);
             Stack<MethodCall> callHistory = methodCallHistory.get();
             assert callHistory != null;
-            if (callHistory != null) {
-                callHistory.pop();
-            }
+            callHistory.pop();
         } finally {
             leaveHook();
         }
+    }
+
+    public static List<MethodCall> findMethodCall(String className, String methodName) {
+        Stack<MethodCall> methodCallStack = methodCallHistory.get();
+        if(methodCallStack == null){
+            return new ArrayList<>();
+        }
+        return methodCallStack.stream()
+                .filter((m) ->  m.className.endsWith(className) && m.methodName.equals(methodName))
+                .collect(Collectors.toList());
+    }
+
+    public static boolean isHookInTheStack() {
+        return isHookInTheStack.get() == null? false : isHookInTheStack.get();
     }
 
     private static boolean enterInTheHook() {
@@ -93,17 +106,4 @@ public class ParameterStorage {
 		}
 	}
 
-    public static List<MethodCall> findMethodCall(String className, String methodName) {
-        Stack<MethodCall> methodCallStack = methodCallHistory.get();
-        if(methodCallStack == null){
-            return new ArrayList<>();
-        }
-        return methodCallStack.stream()
-                .filter((m) ->  m.className.endsWith(className) && m.methodName.equals(methodName))
-                .collect(Collectors.toList());
-    }
-
-    public static boolean isHookInTheStack() {
-        return isHookInTheStack.get() == null? false : isHookInTheStack.get();
-    }
 }

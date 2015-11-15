@@ -17,7 +17,7 @@ public class Exampler {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-	}	
+	}
 	
 	@Test
 	public void example(){

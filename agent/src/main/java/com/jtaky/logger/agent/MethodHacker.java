@@ -40,10 +40,10 @@ public class MethodHacker implements ClassFileTransformer {
 			this.add("java.lang.Shutdown.*");
 			this.add("sun.reflect.*");
 			this.add("sun.*");
-			this.add(".*org.gradle.*");
-			this.add(".*java.*");
+			this.add("org.gradle.*");
+			this.add("java.*");
 			this.add("com.jtaky.logger.agent.*");
-			this.add("org.slf4j..*");
+//			this.add("org.slf4j..*");
 		}
 	};
 
@@ -51,10 +51,10 @@ public class MethodHacker implements ClassFileTransformer {
 	private static final List<String> inspectoredClassPatterns = new ArrayList<String>() {
 		{
 			this.add("com.jtaky.demo.*");
-            // this.add("java.util.logging.Logger");
-            // this.add("ch.qos.logback.classic.Logger");
-            //this.add("org.apache.log4j.Logger");
-            //this.add("org.apache.logging.log4j.Logger");
+            this.add("java.util.logging.Logger");
+            this.add("ch.qos.logback..*");
+            this.add("org.apache.log4j..*");
+            this.add("org.apache.logging.log4j..*");
 		}
 	};
 

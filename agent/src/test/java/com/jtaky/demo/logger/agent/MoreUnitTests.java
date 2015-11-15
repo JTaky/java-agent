@@ -18,7 +18,6 @@ public class MoreUnitTests {
 	class B { public String toString(){ return "B"; } }
 	class C { public String toString(){ return "C"; } }
 
-
 	private double f(int a, double b, Runnable callback){
         try {
             return a + b;

@@ -14,11 +14,11 @@ public class HookRegister {
         add(systemOutAppender);
     }};
     private static List<ITriggerCase> triggers = new ArrayList<ITriggerCase>(){{
-        add(TriggerFactory.exactMethodTrigger("org.slf4j.Logger", "error"));
-        add(TriggerFactory.exactMethodTrigger("java.util.logging.Logger", "error"));
-        add(TriggerFactory.exactMethodTrigger("ch.qos.logback.classic.Logger", "error"));
-        add(TriggerFactory.exactMethodTrigger("org.apache.log4j.Logger", "error")); //log4j 1.x
-        add(TriggerFactory.exactMethodTrigger("org.apache.logging.log4j.Logger", "error")); //log4j 2.x
+        add(TriggerFactory.newMethodTrigger("org.slf4j.Logger", "error"));
+        add(TriggerFactory.newMethodTrigger("java.util.logging.Logger", "error"));
+        add(TriggerFactory.newMethodTrigger("ch.qos.logback.classic.Logger", "error"));
+        add(TriggerFactory.newMethodTrigger("org.apache.log4j.Logger", "error")); //log4j 1.x
+        add(TriggerFactory.newMethodTrigger("org.apache.logging.log4j.Logger", "error")); //log4j 2.x
     }};
 
     static boolean isTriggerCase(MethodCall methodCall){
