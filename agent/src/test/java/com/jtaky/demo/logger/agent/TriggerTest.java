@@ -21,16 +21,16 @@ public class TriggerTest {
     }
 
     @Test
+    public void testAppenderOffTriggerSlf4j(){
+        log.error("test");
+        Assert.assertTrue("trigger wasn't executed", !appenderInvoked.get());
+    }
+
+    @Test
     public void testAppenderOnTriggerSlf4j(){
         HookRegister.registerAppender(methodCalls -> appenderInvoked.set(true));
         log.error("test");
          Assert.assertTrue("trigger was executed", appenderInvoked.get());
-    }
-
-    @Test
-    public void testAppenderOffTriggerSlf4j(){
-        log.error("test");
-        Assert.assertTrue("trigger wasn't executed", !appenderInvoked.get());
     }
 
 }
