@@ -31,18 +31,18 @@ public class MethodHacker implements ClassFileTransformer {
 		"}";
 
     private static String beforeConstructorCallFormat =
-            "try { " +
-                    "com.jtaky.logger.agent.ParameterStorage.beforeMethod(%s, \"%s\", $args ); " +
-                    "} catch(Exception e) { " +
-                    "e.printStackTrace(); " +
-                    "}";
+		"try { " +
+			"com.jtaky.logger.agent.ParameterStorage.beforeMethod(%s, \"%s\", $args ); " +
+		"} catch(Exception e) { " +
+			"e.printStackTrace(); " +
+		"}";
 
     private static String afterConstructorCallFormat =
-            "try { " +
-                    "com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", Void.TYPE, ($w)$_); " +
-                    "} catch(Exception e) { " +
-                    "e.printStackTrace(); " +
-                    "}";
+		"try { " +
+			"com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", Void.TYPE, ($w)$_); " +
+		"} catch(Exception e) { " +
+			"e.printStackTrace(); " +
+		"}";
 
 	@SuppressWarnings("serial")
 	private static final List<String> magicClassPatterns = new ArrayList<String>() {
