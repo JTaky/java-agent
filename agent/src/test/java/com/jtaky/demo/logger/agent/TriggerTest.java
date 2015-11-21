@@ -32,7 +32,7 @@ public class TriggerTest {
 
     @Test
     public void testAppenderOnTriggerSlf4j(){
-        HookRegister.registerAppender(methodCalls -> appenderInvoked.set(true));
+        HookRegister.registerAppender((methodCalls, context)-> appenderInvoked.set(true));
         log.error("test");
         Assert.assertTrue("org.slf4j.Logger#error should be registered by default", appenderInvoked.get());
     }
@@ -40,9 +40,33 @@ public class TriggerTest {
     @Test
     public void testAppenderOnTriggerCustomException(){
         HookRegister.registerTriggerCase(TriggerFactory.triggerAsInstanceOf(TriggerMarkerInterface.class));
-        HookRegister.registerAppender(methodCalls -> appenderInvoked.set(true));
+        HookRegister.registerAppender((methodCalls, context)-> appenderInvoked.set(true));
         new CustomObject();
         Assert.assertTrue("exception trigger was executed", appenderInvoked.get());
+    }
+
+    @Test
+    public void testWeCatchSomeException(){
+        boolean exceptionIsHandled = false;
+        try {
+            exceptionMethod(5);
+        } catch (RuntimeException e){
+            exceptionIsHandled = true;
+        }
+        Assert.assertTrue("exception is handled", exceptionIsHandled);
+    }
+
+    @Test
+    public void testExceptionIsHandled(){
+        HookRegister.registerAppender((methodCalls, context) -> appenderInvoked.set(true));
+        try {
+            exceptionMethod(5);
+        } catch (RuntimeException e){}
+        Assert.assertTrue("exception trigger was handled ", appenderInvoked.get());
+    }
+
+    private void exceptionMethod(int t) {
+        throw new RuntimeException(t + ", exception is here");
     }
 
 }

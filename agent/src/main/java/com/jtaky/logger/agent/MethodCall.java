@@ -11,12 +11,12 @@ import java.util.ArrayList;
 public class MethodCall {
 
     public final Class<?> clazz;
-	public final String methodName;
+	public final StackTraceElement stackTraceElement;
 	public final List<Object> args;
 
 	public MethodCall(Class<?> clazz, StackTraceElement stackTraceElement, Object[] args){
         this.clazz = clazz;
-		this.methodName = stackTraceElement.getMethodName();
+		this.stackTraceElement = stackTraceElement;
 		this.args = Arrays.asList(args);
 	}
 
@@ -24,9 +24,13 @@ public class MethodCall {
         return clazz.getName();
     }
 
+	public String methodName(){
+		return stackTraceElement.getMethodName();
+	}
+
 	@Override
 	public String toString(){
-		return clazz.getName() + "." + methodName + "(" + getFormattedArgs() + ")";
+		return className() + "." + methodName() + "(" + getFormattedArgs() + ")";
 	}	
 
 	private List<String> toUnmodifiableStringsList(Object[] args){
@@ -54,6 +58,8 @@ public class MethodCall {
 			return "'null'";
         if(arg instanceof String)
             return "\"" + arg + "\"";
+		if(arg instanceof MethodCall)
+			return "methodCall - " + ((MethodCall)arg).methodName();
 		if(arg instanceof Object)
 			return "'" + arg.toString() + "'";
 		return String.valueOf(arg);

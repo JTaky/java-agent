@@ -38,7 +38,7 @@ public class ParamHooksTest {
             MethodCall fCall = methodCallList.get(0);
 
             Assert.assertEquals("com.jtaky.demo.logger.agent.ParamHooksTest",  fCall.className());
-            Assert.assertEquals("f",  fCall.methodName);
+            Assert.assertEquals("f",  fCall.methodName());
             Assert.assertEquals(3,  fCall.args.size());
             Assert.assertEquals(12,  fCall.args.get(0));
             Assert.assertEquals(0.33,  (Double)fCall.args.get(1), 0.01);

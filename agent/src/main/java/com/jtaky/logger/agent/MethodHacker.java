@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import javassist.*;
+import javassist.bytecode.ExceptionsAttribute;
 
 /**
  * TODO:
@@ -42,6 +43,11 @@ public class MethodHacker implements ClassFileTransformer {
 			"com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", Void.TYPE, ($w)$_); " +
 		"} catch(Exception e) { " +
 			"e.printStackTrace(); " +
+		"}";
+
+	private static String catchClauseFormat =
+		"{ " +
+			"com.jtaky.logger.agent.ParameterStorage.exceptionHappened(%s, \"%s\", $args, $e); throw $e;" +
 		"}";
 
 	@SuppressWarnings("serial")
@@ -104,6 +110,9 @@ public class MethodHacker implements ClassFileTransformer {
 						String retClassName = getClassOrWrapperName(m.getReturnType());
 						String afterMethodCall = String.format(afterMethodCallFormat, dotClassName + ".class", m.getLongName(), retClassName + ".class");
 						m.insertAfter(afterMethodCall);
+						CtClass exceptionClass = cp.get("java.lang.Exception");
+						String catchClause = String.format(catchClauseFormat, dotClassName + ".class", m.getLongName());
+						m.addCatch(catchClause, exceptionClass);
 					}
 				}
                 for (CtConstructor ct : cc.getConstructors()) {
@@ -140,7 +149,7 @@ public class MethodHacker implements ClassFileTransformer {
 	}
 
 	private void log(String msg) {
-		System.out.println(msg);
+		//System.out.println(msg);
 	}
 
 }

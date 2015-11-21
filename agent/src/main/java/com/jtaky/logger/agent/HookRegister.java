@@ -8,7 +8,10 @@ import java.util.Stack;
 public class HookRegister {
 
     private static final ITraceAppender systemOutAppender
-            = methodCalls -> methodCalls.stream().forEach(System.out::println);
+            = (methodCalls, context) -> {
+        System.out.println("Hook is triggered, with context - '" + context + "'");
+        methodCalls.stream().forEach(System.out::println);
+    };
 
     private static List<ITraceAppender> appenders = new ArrayList<ITraceAppender>(){{
         add(systemOutAppender);
@@ -30,8 +33,8 @@ public class HookRegister {
         return false;
     }
 
-    static void output(Stack<MethodCall> methodCalls) {
-        appenders.stream().forEach((appender) -> appender.output(Collections.unmodifiableList(methodCalls)) );
+    static void triggerHook(Stack<MethodCall> methodCalls, IContext context) {
+        appenders.stream().forEach((appender) -> appender.output(Collections.unmodifiableList(methodCalls), context));
     }
 
     public static void registerTriggerCase(ITriggerCase triggerCase){
