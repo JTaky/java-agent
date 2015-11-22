@@ -7,17 +7,14 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.sun.org.apache.bcel.internal.classfile.Code;
+import com.jtaky.logger.agent.config.AgentConfig;
 import javassist.*;
-import javassist.bytecode.ExceptionsAttribute;
 
 /**
  * TODO:
  * 1. Read and inject configuration
  */
 public class MethodHacker implements ClassFileTransformer {
-
-	private CodeFormatter codeFormatter = new CodeFormatter();
 
 	@SuppressWarnings("serial")
 	private static final List<String> magicClassPatterns = new ArrayList<String>() {
@@ -32,7 +29,7 @@ public class MethodHacker implements ClassFileTransformer {
 	};
 
 	@SuppressWarnings("serial")
-	private static final List<String> inspectoredClassPatterns = new ArrayList<String>() {
+	private static final List<String> defaultInspectoredClassPatterns = new ArrayList<String>() {
 		{
 			this.add("com.jtaky.demo.*");
             this.add("ch.qos.logback..*");
@@ -51,7 +48,7 @@ public class MethodHacker implements ClassFileTransformer {
 	}
 
 	private static boolean isInspectoredClassName(String className) {
-		for (String magicClassPattern : inspectoredClassPatterns) {
+		for (String magicClassPattern : defaultInspectoredClassPatterns) {
 			if (className.matches(magicClassPattern)) {
 				return true;
 			}
@@ -59,7 +56,22 @@ public class MethodHacker implements ClassFileTransformer {
 		return false;
 	}
 
-	@Override
+    private CodeFormatter codeFormatter;
+
+    private List<String> inspectoredClassPatterns;
+
+    public MethodHacker(AgentConfig config){
+        this.codeFormatter = new CodeFormatter();
+        init(config);
+    }
+
+    private void init(AgentConfig config) {
+        inspectoredClassPatterns = new ArrayList<>();
+        inspectoredClassPatterns.addAll(defaultInspectoredClassPatterns);
+        inspectoredClassPatterns.addAll(config.getInspectoredClassPaterns());
+    }
+
+    @Override
 	public byte[] transform(ClassLoader loader, String className,
 			Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
 			byte[] classfileBuffer) throws IllegalClassFormatException {
