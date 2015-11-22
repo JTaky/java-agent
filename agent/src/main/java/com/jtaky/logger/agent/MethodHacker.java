@@ -22,11 +22,11 @@ public class MethodHacker implements ClassFileTransformer {
 	@SuppressWarnings("serial")
 	private static final List<String> magicClassPatterns = new ArrayList<String>() {
 		{
-			this.add("java.lang.Shutdown.*");
-			this.add("sun.reflect.*");
 			this.add("sun.*");
+            this.add("sun.reflect.*");
 			this.add("org.gradle.*");
 			this.add("java.*");
+            this.add("java.lang.Shutdown.*");
 			this.add("com.jtaky.logger.agent.*");
 		}
 	};
