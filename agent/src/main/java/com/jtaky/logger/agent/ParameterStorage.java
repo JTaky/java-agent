@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 public class ParameterStorage {
 
+    public static String CONSTRUCTOR_NAME = "<init>";
+
 	//TODO
 	//add log4j
 	//add implement thread local aggregation with stack logic

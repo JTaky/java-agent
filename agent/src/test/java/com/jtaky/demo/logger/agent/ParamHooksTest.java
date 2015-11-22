@@ -29,14 +29,25 @@ public class ParamHooksTest {
 	private Object f(A a, B b){
 		return new C();
 	}
+
+    static class F {
+        int a;
+        public F(int a, String someStr, Runnable callback){
+            try {
+                this.a = a;
+            } finally {
+                callback.run();
+            }
+        }
+    }
 	
 	@Test
 	public void testPrimitiveTypes(){
         f(12, 0.33, () -> {
             List<MethodCall> methodCallList = ParameterStorage.findMethodCall(getClass().getName(), "f");
             Assert.assertFalse("Did not find method call in stack", methodCallList.isEmpty());
-            MethodCall fCall = methodCallList.get(0);
 
+            MethodCall fCall = methodCallList.get(0);
             Assert.assertEquals("com.jtaky.demo.logger.agent.ParamHooksTest",  fCall.className());
             Assert.assertEquals("f",  fCall.methodName());
             Assert.assertEquals(3,  fCall.args.size());
@@ -44,6 +55,21 @@ public class ParamHooksTest {
             Assert.assertEquals(0.33,  (Double)fCall.args.get(1), 0.01);
         });
 	}
+
+    @Test
+    public void testConstructorParameters(){
+        new F(12, "some string", () -> {
+            List<MethodCall> methodCallList = ParameterStorage.findMethodCall(getClass().getName() + "$F", ParameterStorage.CONSTRUCTOR_NAME);
+            Assert.assertFalse("Did not find method call in stack", methodCallList.isEmpty());
+
+            MethodCall fCall = methodCallList.get(0);
+            Assert.assertEquals("com.jtaky.demo.logger.agent.ParamHooksTest$F",  fCall.className());
+            Assert.assertEquals("<init>",  fCall.methodName());
+            Assert.assertEquals(3,  fCall.args.size());
+            Assert.assertEquals(12,  fCall.args.get(0));
+            Assert.assertEquals("some string",  fCall.args.get(1));
+        });
+    }
 
     @Test
     public void testRecursionTypes(){

@@ -7,48 +7,17 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ArrayList;
 
+import com.sun.org.apache.bcel.internal.classfile.Code;
 import javassist.*;
 import javassist.bytecode.ExceptionsAttribute;
 
 /**
  * TODO:
  * 1. Read and inject configuration
- * 2. Move code to formatter
  */
 public class MethodHacker implements ClassFileTransformer {
 
-	private static String beforeMethodCallFormat =
-		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.beforeMethod(%s, \"%s\", $args ); " +
-		"} catch(Exception e) { " +
-			"e.printStackTrace(); " +
-		"}";
-
-	private static String afterMethodCallFormat =
-		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", %s, ($w)$_); " +
-		"} catch(Exception e) { " + 
-			"e.printStackTrace(); " +
-		"}";
-
-    private static String beforeConstructorCallFormat =
-		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.beforeMethod(%s, \"%s\", $args ); " +
-		"} catch(Exception e) { " +
-			"e.printStackTrace(); " +
-		"}";
-
-    private static String afterConstructorCallFormat =
-		"try { " +
-			"com.jtaky.logger.agent.ParameterStorage.afterMethod(%s, \"%s\", Void.TYPE, ($w)$_); " +
-		"} catch(Exception e) { " +
-			"e.printStackTrace(); " +
-		"}";
-
-	private static String catchClauseFormat =
-		"{ " +
-			"com.jtaky.logger.agent.ParameterStorage.exceptionHappened(%s, \"%s\", $args, $e); throw $e;" +
-		"}";
+	private CodeFormatter codeFormatter = new CodeFormatter();
 
 	@SuppressWarnings("serial")
 	private static final List<String> magicClassPatterns = new ArrayList<String>() {
@@ -105,21 +74,33 @@ public class MethodHacker implements ClassFileTransformer {
 				CtClass cc = cp.get(dotClassName);
 				for (CtMethod m : cc.getDeclaredMethods()) {
 					if (isHackeableMethod(m)) {
-						String beforeMethodCall = String.format(beforeMethodCallFormat, dotClassName + ".class", m.getLongName());
-						m.insertBefore(beforeMethodCall);
-						String retClassName = getClassOrWrapperName(m.getReturnType());
-						String afterMethodCall = String.format(afterMethodCallFormat, dotClassName + ".class", m.getLongName(), retClassName + ".class");
-						m.insertAfter(afterMethodCall);
-						CtClass exceptionClass = cp.get("java.lang.Exception");
-						String catchClause = String.format(catchClauseFormat, dotClassName + ".class", m.getLongName());
-						m.addCatch(catchClause, exceptionClass);
+						m.insertBefore(
+								codeFormatter.formatBeforeMethod(dotClassName, m.getLongName())
+						);
+
+						m.insertAfter(
+								codeFormatter.formatAfterMethod(dotClassName, m.getLongName(), getClassOrWrapperName(m.getReturnType()) + ".class")
+						);
+
+						m.addCatch(
+								codeFormatter.formatCatchClause(dotClassName, m.getLongName()), cp.get("java.lang.Exception")
+						);
 					}
 				}
                 for (CtConstructor ct : cc.getConstructors()) {
-                    String beforeMethodCall = String.format(beforeConstructorCallFormat, dotClassName + ".class", ct.getLongName());
-                    ct.insertBefore(beforeMethodCall);
-                    String afterMethodCall = String.format(afterConstructorCallFormat, dotClassName + ".class", ct.getLongName());
-                    ct.insertAfter(afterMethodCall);
+                    if (isHackeableMethod(ct)) {
+                        ct.insertBefore(
+                                codeFormatter.formatBeforeMethod(dotClassName, ct.getLongName())
+                        );
+
+                        ct.insertAfter(
+                                codeFormatter.formatAfterMethod(dotClassName, ct.getLongName(), "Void.TYPE")
+                        );
+
+                        ct.addCatch(
+                                codeFormatter.formatCatchClause(dotClassName, ct.getLongName()), cp.get("java.lang.Exception")
+                        );
+                    }
                 }
 				classfileBuffer = cc.toBytecode();
 				cc.detach();
@@ -138,7 +119,7 @@ public class MethodHacker implements ClassFileTransformer {
 		}
 	}
 
-	private boolean isHackeableMethod(CtMethod m) {
+	private boolean isHackeableMethod(CtBehavior m) {
 		return !Modifier.isAbstract(m.getModifiers())
 				&& !Modifier.isNative(m.getModifiers())
 				&& !m.getLongName().matches(".*access\\$\\d+$");
