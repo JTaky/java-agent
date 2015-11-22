@@ -8,7 +8,7 @@ afterEvaluate{
     jar.manifest {
         def version = '1.0'
         def manifestClasspath = configurations.compile.collect { 'lib/' + it.getName() }.join(' ')
-        def mainClassName = 'com.jtaky.demo.helloworld.EntryPoint'
+        def mainClassName = 'EntryPoint'
         attributes 'Implementation-Title': 'JTaky',
                 'Implementation-version': version,
                 'Class-Path': manifestClasspath,

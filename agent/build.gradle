@@ -17,7 +17,7 @@ jar {
     //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         def version = '1.0'
-        def premainClass = 'com.jtaky.logger.agent.LoggerAgent'
+        def premainClass = 'com.github.jtaky.logger.agent.LoggerAgent'
         attributes 'Implementation-Title': 'logging-agent', 
                    'Implementation-version': version,
                    'Premain-Class': premainClass,
