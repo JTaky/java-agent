@@ -15,4 +15,3 @@ Reporter:
 
 Debug:
 - custom debug logger
-- add error registering in the MethodHacker javaassist code
