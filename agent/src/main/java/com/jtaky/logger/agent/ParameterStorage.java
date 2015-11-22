@@ -46,12 +46,6 @@ public class ParameterStorage {
         }
     }
 
-    private static void checkTriggerCase(MethodCall methodCall) {
-        if(HookRegister.isTriggerCase(methodCall)){
-            HookRegister.triggerHook(methodCallHistory.get(), new IContext.MethodContext(methodCall));
-        }
-    }
-
     public static void afterMethod(Class<?> clazz, String methodName, Class<?> resultType, Object resultValue) {
         if (isHookInTheStack()) {
             return;
@@ -92,6 +86,12 @@ public class ParameterStorage {
         return isHookInTheStack.get() == null? false : isHookInTheStack.get();
     }
 
+    private static void checkTriggerCase(MethodCall methodCall) {
+        if(HookRegister.isTriggerCase(methodCall)){
+            HookRegister.triggerHook(methodCallHistory.get(), new IContext.MethodContext(methodCall));
+        }
+    }
+
     private static boolean enterInTheHook() {
         Boolean isHookInTheStackLocal = isHookInTheStack.get();
         isHookInTheStack.set(true);
@@ -105,7 +105,6 @@ public class ParameterStorage {
     }
 
     private static void log(String msg) {
-//		System.out.println(msg);
 		try (PrintWriter out = new PrintWriter(new FileOutputStream(new File(
 				"/tmp/out.log"), true))) {
 			out.println(msg);
