@@ -6,9 +6,6 @@ The main idea is to catch the exception situation and output sequence of the met
 
 TODO:
 
-Config:
-- dynamic triggers factory
-
 Reporter:
 - reporting design
 - implement different formatters
